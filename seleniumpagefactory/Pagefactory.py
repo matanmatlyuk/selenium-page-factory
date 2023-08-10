@@ -44,11 +44,14 @@ class PageFactory(object):
 
         if self.mobile_test == True:
             if loc in self.locators.keys():
-                element = self.find_element_by_accessibility_id(self.locators[loc][1])
+                if self.locators[loc][2]:
+                    element = self.find_elements_by_accessibility_id(self.locators[loc[1])
+                else:
+                    element = self.find_element_by_accessibility_id(self.locators[loc][1])
                 return element             
         else:
             if loc in self.locators.keys():
-                locator = (self.TYPE_OF_LOCATORS[self.locators[loc][0].lower()], self.locators[loc][1])
+                locator = (self.TYPE_OF_LOCATORS[self.locators[loc][0].lower()], self.locators[loc][1],self.locators[loc][2])
                 try:
                     element = WebDriverWait(self.driver, self.timeout).until(
                         EC.presence_of_element_located(locator)
@@ -70,13 +73,23 @@ class PageFactory(object):
                         " occurred. With Element -: " + loc +
                         " - locator: (" + locator[0] + ", " + locator[1] + ")"
                     )
-    
-                element = self.get_web_element(*locator)
+                
+                element = self.get_web_element(*locator,locator[2])
+
                 element._locator = locator
                 return element
         return super().__getattr__(loc)
 
-    def get_web_element(self, *loc):
+    def get_web_element(self, *loc,multiple):
+        if multiple:
+            element = self.driver.find_elements(*loc)
+        else:
+            element = self.driver.find_element(*loc)
+            
+        self.highlight_web_element(element)
+        return element
+
+     def get_web_elements(self, *loc):
         element = self.driver.find_element(*loc)
         self.highlight_web_element(element)
         return element
